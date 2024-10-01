@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #3F51B5; /* Deep Blue */
+        }
+
+        #task-form {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        #task-input {
+            width: 300px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        #add-task {
+            margin-left: 10px;
+            padding: 10px 20px;
+            border: none;
+            background-color: #3F51B5; /* Deep Blue */
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #add-task:hover {
+            background-color: #303f9f; /* Darker blue on hover */
+        }
+
+        .task {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .task.completed {
+            text-decoration: line-through;
+            background-color: #e0f7fa; /* Light cyan background */
+        }
+
+        .task button {
+            border: none;
+            background-color: #FF5722; /* Dark Orange */
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .task button:hover {
+            background-color: #d32f2f; /* Dark Red */
+        }
+
+        #filter {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        #filter select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Task Management Application</h1>
+
+    <div id="task-form">
+        <input type="text" id="task-input" placeholder="Add a new task..." required>
+        <button id="add-task">Add Task</button>
+    </div>
+
+    <div id="filter">
+        <label for="filter-select">Filter tasks:</label>
+        <select id="filter-select">
+            <option value="all">All</option>
+            <option value="completed">Completed</option>
+            <option value="pending">Pending</option>
+        </select>
+    </div>
+
+    <div id="task-list"></div>
+
+    <script>
+        const taskInput = document.getElementById('task-input');
+        const addTaskButton = document.getElementById('add-task');
+        const taskList = document.getElementById('task-list');
+        const filterSelect = document.getElementById('filter-select');
+
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+        function renderTasks(filter) {
+            taskList.innerHTML = '';
+            tasks.forEach((task, index) => {
+                if (filter === 'completed' && !task.completed) return;
+                if (filter === 'pending' && task.completed) return;
+
+                const taskDiv = document.createElement('div');
+                taskDiv.classList.add('task');
+                if (task.completed) taskDiv.classList.add('completed');
+
+                taskDiv.innerHTML = `
+                    <span>${task.name}</span>
+                    <div>
+                        <button onclick="toggleTask(${index})">${task.completed ? 'Undo' : 'Complete'}</button>
+                        <button onclick="deleteTask(${index})">Delete</button>
+                    </div>
+                `;
+                taskList.appendChild(taskDiv);
+            });
+        }
+
+        function addTask() {
+            const taskName = taskInput.value;
+            if (taskName) {
+                tasks.push({ name: taskName, completed: false });
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                taskInput.value = '';
+                renderTasks(filterSelect.value);
+            }
+        }
+
+        function toggleTask(index) {
+            tasks[index].completed = !tasks[index].completed;
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            renderTasks(filterSelect.value);
+        }
+
+        function deleteTask(index) {
+            tasks.splice(index, 1);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            renderTasks(filterSelect.value);
+        }
+
+        addTaskButton.addEventListener('click', addTask);
+        filterSelect.addEventListener('change', () => renderTasks(filterSelect.value));
+
+        // Initial render
+        renderTasks('all');
+    </script>
+</body>
+</html>
